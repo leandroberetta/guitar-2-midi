@@ -123,6 +123,9 @@ int main(void) {
 	MX_ADC1_Init();
 	MX_USB_DEVICE_Init();
 	/* USER CODE BEGIN 2 */
+	HAL_Delay(500);
+	OLED_Init(&hi2c1);
+	OLED_FillScreen(0x00);
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t*) adcBuffer, ADC_BUFFER_SIZE);
 	initFFT();
 	/* USER CODE END 2 */
@@ -147,6 +150,8 @@ int main(void) {
 					switch (state) {
 					case IDLE_STATE:
 						sendNoteOn(midiNote, velocity);
+						OLED_DrawMidiMessage(midiNote, velocity);
+
 						currentNote = midiNote;
 						state = NOTE_PRESENT_STATE;
 						break;
@@ -154,6 +159,8 @@ int main(void) {
 						if (midiNote != currentNote) {
 							sendNoteOff(currentNote);
 							sendNoteOn(midiNote, velocity);
+							OLED_DrawMidiMessage(midiNote, velocity);
+
 							currentNote = midiNote;
 						}
 						break;
@@ -162,6 +169,8 @@ int main(void) {
 			} else {
 				if (state == NOTE_PRESENT_STATE) {
 					sendNoteOff(currentNote);
+					OLED_FillScreen(0x00);
+
 					state = IDLE_STATE;
 				}
 			}
