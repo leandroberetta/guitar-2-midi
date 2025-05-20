@@ -35,8 +35,9 @@ void sendNoteOn(uint8_t note, uint8_t velocity) {
         velocity       // Velocity
     };
 
-    // Enviar el paquete directamente, no es necesario chequear estado (la stack lo maneja)
-    USBD_LL_Transmit(&hUsbDeviceFS, 0x81, buffer, 4);
+    while (USBD_LL_Transmit(&hUsbDeviceFS, 0x81, buffer, 4) != USBD_OK) {
+        // Espera activa hasta que el endpoint esté libre
+    }
 }
 
 void sendNoteOff(uint8_t note) {
@@ -47,16 +48,18 @@ void sendNoteOff(uint8_t note) {
         0         // Velocity 0
     };
 
-    USBD_LL_Transmit(&hUsbDeviceFS, 0x81, buffer, 4);
-}
+    while (USBD_LL_Transmit(&hUsbDeviceFS, 0x81, buffer, 4) != USBD_OK) {
+        // Espera activa hasta que el endpoint esté libre
+    }}
 
 uint8_t energyToVelocity(float energy) {
-    const float ENERGY_MIN = ENERGY_THRESHOLD;
+    const float ENERGY_MIN = 750.0f;
     const float ENERGY_MAX = 2000.0f;
 
     if (energy < ENERGY_MIN) return 1;
     if (energy > ENERGY_MAX) energy = ENERGY_MAX;
 
-    float norm = (energy - ENERGY_MIN) / (ENERGY_MAX - ENERGY_MIN);
-    return (uint8_t)(norm * 126.0f + 1.0f);  // De 1 a 127
+    uint8_t velocity = (uint8_t)(energy * 127.0f / ENERGY_MAX + 0.5f);
+
+    return (uint8_t)velocity;
 }

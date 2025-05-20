@@ -14,7 +14,7 @@
 #define FREQ_MAX 4200.0f
 #define MIN_MIDI_NOTE 40
 #define MAX_MIDI_NOTE 108
-#define ENERGY_THRESHOLD 800.0f
+#define ENERGY_THRESHOLD 0.5f
 
 void sendNoteOn(uint8_t note, uint8_t velocity);
 void sendNoteOff(uint8_t note);

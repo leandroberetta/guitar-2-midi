@@ -25,6 +25,7 @@
 #include "midi.h"
 #include "fft.h"
 #include "arm_math.h"
+#include "oled.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -134,7 +135,6 @@ int main(void) {
 	/* USER CODE BEGIN WHILE */
 
 	while (1) {
-
 		if (dataReady) {
 			dataReady = 0;
 
@@ -143,14 +143,14 @@ int main(void) {
 			float totalEnergy = calculateEnergy(fftMagnitudes, FFT_SIZE / 2);
 			if (totalEnergy > ENERGY_THRESHOLD) {
 				float frecuencia = findFundamentalFrequency(fftMagnitudes);
-				float velocity = energyToVelocity(totalEnergy);
+				uint8_t velocity = energyToVelocity(totalEnergy);
 				uint8_t midiNote = frequencyToMIDINote(frecuencia);
 
 				if (midiNote) {
 					switch (state) {
 					case IDLE_STATE:
 						sendNoteOn(midiNote, velocity);
-						OLED_DrawMidiMessage(midiNote, velocity);
+						//OLED_DrawMidiMessage(midiNote, velocity);
 
 						currentNote = midiNote;
 						state = NOTE_PRESENT_STATE;
@@ -158,8 +158,9 @@ int main(void) {
 					case NOTE_PRESENT_STATE:
 						if (midiNote != currentNote) {
 							sendNoteOff(currentNote);
+							HAL_Delay(10);
 							sendNoteOn(midiNote, velocity);
-							OLED_DrawMidiMessage(midiNote, velocity);
+							//OLED_DrawMidiMessage(midiNote, velocity);
 
 							currentNote = midiNote;
 						}
@@ -169,13 +170,12 @@ int main(void) {
 			} else {
 				if (state == NOTE_PRESENT_STATE) {
 					sendNoteOff(currentNote);
-					OLED_FillScreen(0x00);
+					//OLED_FillScreen(0x00);
 
 					state = IDLE_STATE;
 				}
 			}
 		}
-
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
