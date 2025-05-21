@@ -14,9 +14,9 @@
 #define FFT_SIZE 4096
 #define FS 21340.0f
 
-void initFFT(void);
-void processFFT(const uint16_t *adcBuffer, float *inputSignal, float *fftOutputComplex, float *fftMagnitudes);
-float findFundamentalFrequency(const float *fftMagnitudes);
-float calculateEnergy(float *fftMagnitudes, int size);
+void FFT_Init(void);
+void FFT_Process(const uint16_t *adcBuffer, float *inputSignal, float *fftOutputComplex, float *fftMagnitudes);
+float FFT_FindFundamentalFrequency(const float *fftMagnitudes);
+float FFT_CalculateEnergy(float *fftMagnitudes, int size);
 
 #endif /* SRC_FFT_H_ */

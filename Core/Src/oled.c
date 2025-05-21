@@ -1,4 +1,5 @@
 #include "oled.h"
+#include "midi.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -132,7 +133,12 @@ void OLED_DrawString(uint8_t x, uint8_t page, const char *str) {
 
 void OLED_DrawMidiMessage(uint8_t note, uint8_t velocity) {
 	char aux[32];
-	sprintf(aux, "Note: %d", note);
+    char midiString[8];
+
+	OLED_FillScreen(0x00);
+
+	MIDI_MidiNoteToString(note, midiString);
+	sprintf(aux, "Note: %s (%d)", midiString, note);
 	OLED_DrawString(0, 0, aux);
 	sprintf(aux, "Velocity: %d", velocity);
 	OLED_DrawString(0, 1, aux);

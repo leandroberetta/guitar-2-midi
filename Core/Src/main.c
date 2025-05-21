@@ -64,6 +64,7 @@ float32_t fftMagnitudes[FFT_SIZE / 2];
 
 State state = IDLE_STATE;
 uint8_t currentNote = 0;
+uint8_t lastVelocity = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -128,7 +129,7 @@ int main(void) {
 	OLED_Init(&hi2c1);
 	OLED_FillScreen(0x00);
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t*) adcBuffer, ADC_BUFFER_SIZE);
-	initFFT();
+	FFT_Init();
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
@@ -138,39 +139,40 @@ int main(void) {
 		if (dataReady) {
 			dataReady = 0;
 
-			processFFT(adcBuffer, inputSignal, fftOutputComplex, fftMagnitudes);
+			FFT_Process(adcBuffer, inputSignal, fftOutputComplex, fftMagnitudes);
 
-			float totalEnergy = calculateEnergy(fftMagnitudes, FFT_SIZE / 2);
+			float totalEnergy = FFT_CalculateEnergy(fftMagnitudes, FFT_SIZE / 2);
+
 			if (totalEnergy > ENERGY_THRESHOLD) {
-				float frecuencia = findFundamentalFrequency(fftMagnitudes);
-				uint8_t velocity = energyToVelocity(totalEnergy);
-				uint8_t midiNote = frequencyToMIDINote(frecuencia);
+				float frecuencia = FFT_FindFundamentalFrequency(fftMagnitudes);
+				uint8_t velocity = MIDI_EnergyToVelocity(totalEnergy);
+				uint8_t midiNote = MIDI_FrequencyToMIDINote(frecuencia);
 
 				if (midiNote) {
 					switch (state) {
 					case IDLE_STATE:
-						sendNoteOn(midiNote, velocity);
-						//OLED_DrawMidiMessage(midiNote, velocity);
+						MIDI_SendNoteOn(midiNote, velocity);
+						OLED_DrawMidiMessage(midiNote, velocity);
 
 						currentNote = midiNote;
 						state = NOTE_PRESENT_STATE;
 						break;
 					case NOTE_PRESENT_STATE:
 						if (midiNote != currentNote) {
-							sendNoteOff(currentNote);
-							HAL_Delay(10);
-							sendNoteOn(midiNote, velocity);
-							//OLED_DrawMidiMessage(midiNote, velocity);
+							MIDI_SendNoteOff(currentNote);
+							HAL_Delay(3);
+							MIDI_SendNoteOn(midiNote, velocity);
+							OLED_DrawMidiMessage(midiNote, velocity);
 
 							currentNote = midiNote;
-						}
+	                    }
 						break;
 					}
 				}
 			} else {
 				if (state == NOTE_PRESENT_STATE) {
-					sendNoteOff(currentNote);
-					//OLED_FillScreen(0x00);
+					MIDI_SendNoteOff(currentNote);
+					OLED_FillScreen(0x00);
 
 					state = IDLE_STATE;
 				}

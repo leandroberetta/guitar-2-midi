@@ -11,7 +11,20 @@
 
 extern USBD_HandleTypeDef hUsbDeviceFS;
 
-int frequencyToMIDINote(float frequency) {
+const char *noteNames[] = { "C", "C#", "D", "D#", "E", "F",
+                            "F#", "G", "G#", "A", "A#", "B" };
+
+void MIDI_MidiNoteToString(uint8_t midiNote, char *out) {
+    if (midiNote > 127) {
+        strcpy(out, "-");
+        return;
+    }
+    int note = midiNote % 12;
+    int octave = (midiNote / 12) - 1;
+    sprintf(out, "%s%d", noteNames[note], octave);
+}
+
+int MIDI_FrequencyToMIDINote(float frequency) {
 	if (frequency < FREQ_MIN || frequency > FREQ_MAX) {
 		return -1;  // Frecuencia fuera de rango
 	}
@@ -27,7 +40,7 @@ int frequencyToMIDINote(float frequency) {
 	return midiNote;
 }
 
-void sendNoteOn(uint8_t note, uint8_t velocity) {
+void MIDI_SendNoteOn(uint8_t note, uint8_t velocity) {
     uint8_t buffer[4] = {
         0x09,          // Cable 0, CIN = 9 (Note On)
         0x90,          // Status: Note On, Channel 0 (0x90 | 0)
@@ -40,7 +53,7 @@ void sendNoteOn(uint8_t note, uint8_t velocity) {
     }
 }
 
-void sendNoteOff(uint8_t note) {
+void MIDI_SendNoteOff(uint8_t note) {
     uint8_t buffer[4] = {
         0x08,     // Cable 0, CIN = 8 (Note Off)
         0x80,     // Status: Note Off, Channel 0 (0x80 | 0)
@@ -52,14 +65,20 @@ void sendNoteOff(uint8_t note) {
         // Espera activa hasta que el endpoint esté libre
     }}
 
-uint8_t energyToVelocity(float energy) {
-    const float ENERGY_MIN = 750.0f;
-    const float ENERGY_MAX = 2000.0f;
+uint8_t MIDI_EnergyToVelocity(float energy) {
+    const float ENERGY_MIN = 50.0f;
+    const float ENERGY_MAX = 4000.0f;
 
     if (energy < ENERGY_MIN) return 1;
     if (energy > ENERGY_MAX) energy = ENERGY_MAX;
 
-    uint8_t velocity = (uint8_t)(energy * 127.0f / ENERGY_MAX + 0.5f);
+    uint8_t velocity = 1;
+    if (energy < ENERGY_MIN) velocity = 1;
+    else {
+        float norm = (energy - ENERGY_MIN) / (ENERGY_MAX - ENERGY_MIN);
+        if (norm > 1.0f) norm = 1.0f;
+        velocity = (uint8_t)(sqrtf(norm) * 127.0f + 0.5f);
+    }
 
     return (uint8_t)velocity;
 }
