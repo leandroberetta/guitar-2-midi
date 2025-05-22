@@ -68,7 +68,7 @@ static void OLED_WriteCommand(uint8_t cmd) {
     while (!oled_tx_done);
     oled_tx_done = 0;
     HAL_I2C_Master_Transmit_IT(oled_i2c, OLED_ADDRESS, buffer, 2);
-    while (!oled_tx_done);  // esperar a que termine
+    while (!oled_tx_done);
 }
 
 static void OLED_WriteData(uint8_t data) {
@@ -160,7 +160,6 @@ void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c) {
 
 void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *hi2c) {
     if (hi2c == oled_i2c) {
-        // Si querés, logueá el error
-        oled_tx_done = 1; // liberar para no bloquear
+        oled_tx_done = 1;
     }
 }
