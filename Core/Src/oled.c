@@ -8,6 +8,8 @@ static I2C_HandleTypeDef *oled_i2c;
 #define OLED_COMMAND 0x00
 #define OLED_DATA    0x40
 
+static volatile uint8_t oled_tx_done = 1;
+
 const uint8_t font5x8[][5] = { { 0x00, 0x00, 0x00, 0x00, 0x00 }, { 0x00, 0x00,
 		0x5F, 0x00, 0x00 }, { 0x00, 0x07, 0x00, 0x07, 0x00 }, { 0x14, 0x7F,
 		0x14, 0x7F, 0x14 }, { 0x24, 0x2A, 0x7F, 0x2A, 0x12 }, { 0x23, 0x13,
@@ -62,13 +64,19 @@ static const uint8_t* get_char_bitmap(char c) {
 }
 
 static void OLED_WriteCommand(uint8_t cmd) {
-	uint8_t buffer[2] = { OLED_COMMAND, cmd };
-	HAL_I2C_Master_Transmit(oled_i2c, OLED_ADDRESS, buffer, 2, HAL_MAX_DELAY);
+    uint8_t buffer[2] = { OLED_COMMAND, cmd };
+    while (!oled_tx_done);
+    oled_tx_done = 0;
+    HAL_I2C_Master_Transmit_IT(oled_i2c, OLED_ADDRESS, buffer, 2);
+    while (!oled_tx_done);  // esperar a que termine
 }
 
 static void OLED_WriteData(uint8_t data) {
-	uint8_t buffer[2] = { OLED_DATA, data };
-	HAL_I2C_Master_Transmit(oled_i2c, OLED_ADDRESS, buffer, 2, HAL_MAX_DELAY);
+    uint8_t buffer[2] = { OLED_DATA, data };
+    while (!oled_tx_done);
+    oled_tx_done = 0;
+    HAL_I2C_Master_Transmit_IT(oled_i2c, OLED_ADDRESS, buffer, 2);
+    while (!oled_tx_done);
 }
 
 static void OLED_SetPosition(uint8_t page, uint8_t column) {
@@ -142,4 +150,17 @@ void OLED_DrawMidiMessage(uint8_t note, uint8_t velocity) {
 	OLED_DrawString(0, 0, aux);
 	sprintf(aux, "Velocity: %d", velocity);
 	OLED_DrawString(0, 1, aux);
+}
+
+void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c) {
+    if (hi2c == oled_i2c) {
+        oled_tx_done = 1;
+    }
+}
+
+void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *hi2c) {
+    if (hi2c == oled_i2c) {
+        // Si querés, logueá el error
+        oled_tx_done = 1; // liberar para no bloquear
+    }
 }

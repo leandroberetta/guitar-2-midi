@@ -139,9 +139,11 @@ int main(void) {
 		if (dataReady) {
 			dataReady = 0;
 
-			FFT_Process(adcBuffer, inputSignal, fftOutputComplex, fftMagnitudes);
+			FFT_Process(adcBuffer, inputSignal, fftOutputComplex,
+					fftMagnitudes);
 
-			float totalEnergy = FFT_CalculateEnergy(fftMagnitudes, FFT_SIZE / 2);
+			float totalEnergy = FFT_CalculateEnergy(fftMagnitudes,
+					FFT_SIZE / 2);
 
 			if (totalEnergy > ENERGY_THRESHOLD) {
 				float frecuencia = FFT_FindFundamentalFrequency(fftMagnitudes);
@@ -165,7 +167,7 @@ int main(void) {
 							OLED_DrawMidiMessage(midiNote, velocity);
 
 							currentNote = midiNote;
-	                    }
+						}
 						break;
 					}
 				}
@@ -303,7 +305,11 @@ static void MX_I2C1_Init(void) {
 		Error_Handler();
 	}
 	/* USER CODE BEGIN I2C1_Init 2 */
+	HAL_NVIC_SetPriority(I2C1_EV_IRQn, 2, 0);
+	HAL_NVIC_EnableIRQ(I2C1_EV_IRQn);
 
+	HAL_NVIC_SetPriority(I2C1_ER_IRQn, 2, 0);
+	HAL_NVIC_EnableIRQ(I2C1_ER_IRQn);
 	/* USER CODE END I2C1_Init 2 */
 
 }
