@@ -24,20 +24,13 @@ void MIDI_MidiNoteToString(uint8_t midiNote, char *out) {
     sprintf(out, "%s%d", noteNames[note], octave);
 }
 
-int MIDI_FrequencyToMIDINote(float frequency) {
-	if (frequency < FREQ_MIN || frequency > FREQ_MAX) {
-		return -1;  // Frecuencia fuera de rango
-	}
+uint8_t MIDI_FrequencyToMIDINote(float frequency) {
+    if (frequency < 20.0f || frequency > 2000.0f) return INVALID_MIDI_NOTE;
 
-	// Calcular la nota MIDI con la fórmula optimizada
-	int midiNote = (int) (69 + 12 * log2f(frequency / 440.0f) + 0.5f); // Redondear al entero más cercano
+    int midiNote = (int)(69 + 12 * log2f(frequency / 440.0f) + 0.5f);
+    if (midiNote < 21 || midiNote > 108) return INVALID_MIDI_NOTE;
 
-	// Asegurarse de que la nota MIDI esté dentro del rango esperado
-	if (midiNote < MIN_MIDI_NOTE || midiNote > MAX_MIDI_NOTE) {
-		return -1;  // Nota MIDI no válida en este contexto
-	}
-
-	return midiNote;
+    return (uint8_t)midiNote;
 }
 
 void MIDI_SendNoteOn(uint8_t note, uint8_t velocity) {

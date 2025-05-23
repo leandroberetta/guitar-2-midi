@@ -143,30 +143,34 @@ int main(void) {
 					fftMagnitudes);
 
 			float totalEnergy = FFT_CalculateEnergy(fftMagnitudes,
-					FFT_SIZE / 2);
+			FFT_SIZE / 2);
 
 			if (totalEnergy > ENERGY_THRESHOLD) {
 				float frecuencia = FFT_FindFundamentalFrequency(fftMagnitudes);
 				uint8_t velocity = MIDI_EnergyToVelocity(totalEnergy);
 				uint8_t midiNote = MIDI_FrequencyToMIDINote(frecuencia);
 
-				if (midiNote) {
+				if (midiNote != INVALID_MIDI_NOTE) {
 					switch (state) {
 					case IDLE_STATE:
-						MIDI_SendNoteOn(midiNote, velocity);
-						OLED_DrawMidiMessage(midiNote, velocity);
-
-						currentNote = midiNote;
-						state = NOTE_PRESENT_STATE;
-						break;
-					case NOTE_PRESENT_STATE:
-						if (midiNote != currentNote) {
-							MIDI_SendNoteOff(currentNote);
-							HAL_Delay(3);
+						if (velocity > 10) {
 							MIDI_SendNoteOn(midiNote, velocity);
 							OLED_DrawMidiMessage(midiNote, velocity);
-
 							currentNote = midiNote;
+							state = NOTE_PRESENT_STATE;
+						}
+
+						break;
+					case NOTE_PRESENT_STATE:
+						if (velocity > 10) {
+							if (midiNote != currentNote || velocity >= lastVelocity) {
+								MIDI_SendNoteOff(currentNote);
+								HAL_Delay(3);
+								MIDI_SendNoteOn(midiNote, velocity);
+								OLED_DrawMidiMessage(midiNote, velocity);
+								lastVelocity = velocity;
+								currentNote = midiNote;
+							}
 						}
 						break;
 					}
