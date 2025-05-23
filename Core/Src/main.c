@@ -22,17 +22,15 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "arm_math.h"
 #include "midi.h"
 #include "fft.h"
-#include "arm_math.h"
 #include "oled.h"
+#include "logic.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-typedef enum {
-	IDLE_STATE, NOTE_PRESENT_STATE
-} State;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -55,16 +53,11 @@ I2S_HandleTypeDef hi2s3;
 SPI_HandleTypeDef hspi1;
 
 /* USER CODE BEGIN PV */
-volatile uint8_t dataReady = 0;
-
+volatile uint8_t adcReady = 0;
 uint16_t adcBuffer[ADC_BUFFER_SIZE];
 float32_t inputSignal[FFT_SIZE];
 float32_t fftOutputComplex[FFT_SIZE];
 float32_t fftMagnitudes[FFT_SIZE / 2];
-
-State state = IDLE_STATE;
-uint8_t currentNote = 0;
-uint8_t lastVelocity = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -81,13 +74,11 @@ static void MX_ADC1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
 	if (hadc->Instance == ADC1) {
-		dataReady = 1;
+		adcReady = 1;
 	}
 }
-
 /* USER CODE END 0 */
 
 /**
@@ -136,53 +127,16 @@ int main(void) {
 	/* USER CODE BEGIN WHILE */
 
 	while (1) {
-		if (dataReady) {
-			dataReady = 0;
+		if (adcReady) {
+			adcReady = 0;
 
 			FFT_Process(adcBuffer, inputSignal, fftOutputComplex,
 					fftMagnitudes);
 
-			float totalEnergy = FFT_CalculateEnergy(fftMagnitudes,
-			FFT_SIZE / 2);
+			float32_t energy = FFT_CalculateEnergy(fftMagnitudes, FFT_SIZE / 2);
+			float32_t frequency = FFT_FindFundamentalFrequency(fftMagnitudes);
 
-			if (totalEnergy > ENERGY_THRESHOLD) {
-				float frecuencia = FFT_FindFundamentalFrequency(fftMagnitudes);
-				uint8_t velocity = MIDI_EnergyToVelocity(totalEnergy);
-				uint8_t midiNote = MIDI_FrequencyToMIDINote(frecuencia);
-
-				if (midiNote != INVALID_MIDI_NOTE) {
-					switch (state) {
-					case IDLE_STATE:
-						if (velocity > 10) {
-							MIDI_SendNoteOn(midiNote, velocity);
-							OLED_DrawMidiMessage(midiNote, velocity);
-							currentNote = midiNote;
-							state = NOTE_PRESENT_STATE;
-						}
-
-						break;
-					case NOTE_PRESENT_STATE:
-						if (velocity > 10) {
-							if (midiNote != currentNote || velocity >= lastVelocity) {
-								MIDI_SendNoteOff(currentNote);
-								HAL_Delay(3);
-								MIDI_SendNoteOn(midiNote, velocity);
-								OLED_DrawMidiMessage(midiNote, velocity);
-								lastVelocity = velocity;
-								currentNote = midiNote;
-							}
-						}
-						break;
-					}
-				}
-			} else {
-				if (state == NOTE_PRESENT_STATE) {
-					MIDI_SendNoteOff(currentNote);
-					OLED_FillScreen(0x00);
-
-					state = IDLE_STATE;
-				}
-			}
+			Logic_HandleFrequency(frequency, energy);
 		}
 		/* USER CODE END WHILE */
 

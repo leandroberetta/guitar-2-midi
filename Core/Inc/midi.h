@@ -9,6 +9,7 @@
 #define SRC_MIDI_H_
 
 #include <stdint.h>
+#include "arm_math.h"
 
 #define FREQ_MIN 82.0f
 #define FREQ_MAX 4200.0f
@@ -18,8 +19,8 @@
 
 void MIDI_SendNoteOn(uint8_t note, uint8_t velocity);
 void MIDI_SendNoteOff(uint8_t note);
-uint8_t MIDI_EnergyToVelocity(float energy);
-uint8_t MIDI_FrequencyToMIDINote(float frequency);
+uint8_t MIDI_EnergyToVelocity(float32_t energy);
+uint8_t MIDI_FrequencyToMIDINote(float32_t frequency);
 void MIDI_MidiNoteToString(uint8_t midiNote, char *out);
 
 

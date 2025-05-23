@@ -24,7 +24,7 @@ void MIDI_MidiNoteToString(uint8_t midiNote, char *out) {
     sprintf(out, "%s%d", noteNames[note], octave);
 }
 
-uint8_t MIDI_FrequencyToMIDINote(float frequency) {
+uint8_t MIDI_FrequencyToMIDINote(float32_t frequency) {
     if (frequency < 20.0f || frequency > 2000.0f) return INVALID_MIDI_NOTE;
 
     int midiNote = (int)(69 + 12 * log2f(frequency / 440.0f) + 0.5f);
@@ -58,9 +58,9 @@ void MIDI_SendNoteOff(uint8_t note) {
         // Espera activa hasta que el endpoint esté libre
     }}
 
-uint8_t MIDI_EnergyToVelocity(float energy) {
-    const float ENERGY_MIN = 50.0f;
-    const float ENERGY_MAX = 4000.0f;
+uint8_t MIDI_EnergyToVelocity(float32_t energy) {
+    const float32_t ENERGY_MIN = 50.0f;
+    const float32_t ENERGY_MAX = 4000.0f;
 
     if (energy < ENERGY_MIN) return 1;
     if (energy > ENERGY_MAX) energy = ENERGY_MAX;
@@ -68,10 +68,10 @@ uint8_t MIDI_EnergyToVelocity(float energy) {
     uint8_t velocity = 1;
     if (energy < ENERGY_MIN) velocity = 1;
     else {
-        float norm = (energy - ENERGY_MIN) / (ENERGY_MAX - ENERGY_MIN);
+    	float32_t norm = (energy - ENERGY_MIN) / (ENERGY_MAX - ENERGY_MIN);
         if (norm > 1.0f) norm = 1.0f;
         velocity = (uint8_t)(sqrtf(norm) * 127.0f + 0.5f);
     }
 
-    return (uint8_t)velocity;
+    return (uint8_t) velocity;
 }

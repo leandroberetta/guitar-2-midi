@@ -9,6 +9,7 @@
 #define SRC_FFT_H
 
 #include <stdint.h>
+#include "arm_math.h"
 
 #define ADC_BUFFER_SIZE 4096
 #define FFT_SIZE 4096
@@ -16,8 +17,8 @@
 #define ENERGY_THRESHOLD 50.0f
 
 void FFT_Init(void);
-void FFT_Process(const uint16_t *adcBuffer, float *inputSignal, float *fftOutputComplex, float *fftMagnitudes);
-float FFT_FindFundamentalFrequency(const float *fftMagnitudes);
-float FFT_CalculateEnergy(float *fftMagnitudes, int size);
+void FFT_Process(const uint16_t *adcBuffer, float32_t *inputSignal, float32_t *fftOutputComplex, float32_t *fftMagnitudes);
+float32_t FFT_FindFundamentalFrequency(const float32_t *fftMagnitudes);
+float32_t FFT_CalculateEnergy(float32_t *fftMagnitudes, uint16_t size);
 
 #endif /* SRC_FFT_H_ */
