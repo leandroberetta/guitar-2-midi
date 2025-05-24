@@ -15,10 +15,10 @@
 #define SAMPLE_RATE     21340.0f
 #define BUFFER_SIZE     256
 #define MIN_FREQ        80.0f
-#define MAX_FREQ        1000.0f
+#define MAX_FREQ        900.0f
 
-#define MIN_LAG   (int)(SAMPLE_RATE / MAX_FREQ)  // 24
-#define MAX_LAG   (int)(SAMPLE_RATE / MIN_FREQ)  // 300
+#define MIN_LAG   (int)(SAMPLE_RATE / MAX_FREQ)
+#define MAX_LAG   (int)(SAMPLE_RATE / MIN_FREQ)
 
 typedef struct {
     float frequency;
