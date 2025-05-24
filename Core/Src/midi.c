@@ -59,8 +59,8 @@ void MIDI_SendNoteOff(uint8_t note) {
     }}
 
 uint8_t MIDI_EnergyToVelocity(float32_t energy) {
-    const float32_t ENERGY_MIN = 50.0f;
-    const float32_t ENERGY_MAX = 4000.0f;
+    const float32_t ENERGY_MIN = 200000.0f;
+    const float32_t ENERGY_MAX = 400000.0f;
 
     if (energy < ENERGY_MIN) return 1;
     if (energy > ENERGY_MAX) energy = ENERGY_MAX;

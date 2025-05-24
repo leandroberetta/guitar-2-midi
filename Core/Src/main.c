@@ -27,6 +27,7 @@
 #include "fft.h"
 #include "oled.h"
 #include "logic.h"
+#include "autocorr.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -130,13 +131,9 @@ int main(void) {
 		if (adcReady) {
 			adcReady = 0;
 
-			FFT_Process(adcBuffer, inputSignal, fftOutputComplex,
-					fftMagnitudes);
+			FreqResult r = Autocorrelation_FindFundamentalFrequency(adcBuffer);
 
-			float32_t energy = FFT_CalculateEnergy(fftMagnitudes, FFT_SIZE / 2);
-			float32_t frequency = FFT_FindFundamentalFrequency(fftMagnitudes);
-
-			Logic_HandleFrequency(frequency, energy);
+			Logic_HandleFrequency(r.frequency, r.energy);
 		}
 		/* USER CODE END WHILE */
 

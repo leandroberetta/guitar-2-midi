@@ -17,7 +17,7 @@ uint8_t currentNote = 0;
 uint8_t lastVelocity = 0;
 
 void Logic_HandleFrequency(float frequency, float energy) {
-	if (energy > ENERGY_THRESHOLD) {
+	if (frequency > 0) {
 		uint8_t velocity = MIDI_EnergyToVelocity(energy);
 		uint8_t midiNote = MIDI_FrequencyToMIDINote(frequency);
 
