@@ -10,6 +10,8 @@
 
 #include "arm_math.h"
 
+#define SAME_NOTE_THRESHOLD 1.2f
+
 typedef enum {
 	IDLE_STATE,
 	NOTE_PRESENT_STATE

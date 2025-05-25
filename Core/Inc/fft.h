@@ -11,10 +11,11 @@
 #include <stdint.h>
 #include "arm_math.h"
 
-#define ADC_BUFFER_SIZE 4096
-#define FFT_SIZE 4096
+#define FFT_SIZE 1024
+#define ADC_BUFFER_SIZE FFT_SIZE
 #define FS 21340.0f
-#define ENERGY_THRESHOLD 50.0f
+#define ENERGY_THRESHOLD 1.0f
+#define ENERGY_MAX 1000.0f
 
 void FFT_Init(void);
 void FFT_Process(const uint16_t *adcBuffer, float32_t *inputSignal, float32_t *fftOutputComplex, float32_t *fftMagnitudes);

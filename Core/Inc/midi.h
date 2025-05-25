@@ -10,11 +10,10 @@
 
 #include <stdint.h>
 #include "arm_math.h"
+#include "fft.h"
 
-#define FREQ_MIN 82.0f
-#define FREQ_MAX 4200.0f
-#define MIN_MIDI_NOTE 40
-#define MAX_MIDI_NOTE 108
+#define MIDI_NOTE_MIN 40
+#define MIDI_NOTE_MAX 86
 #define INVALID_MIDI_NOTE 255
 
 void MIDI_SendNoteOn(uint8_t note, uint8_t velocity);

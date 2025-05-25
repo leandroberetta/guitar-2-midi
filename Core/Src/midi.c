@@ -25,10 +25,8 @@ void MIDI_MidiNoteToString(uint8_t midiNote, char *out) {
 }
 
 uint8_t MIDI_FrequencyToMIDINote(float32_t frequency) {
-    if (frequency < 20.0f || frequency > 2000.0f) return INVALID_MIDI_NOTE;
-
     int midiNote = (int)(69 + 12 * log2f(frequency / 440.0f) + 0.5f);
-    if (midiNote < 21 || midiNote > 108) return INVALID_MIDI_NOTE;
+    if (midiNote < MIDI_NOTE_MIN || midiNote > MIDI_NOTE_MAX) return INVALID_MIDI_NOTE;
 
     return (uint8_t)midiNote;
 }
@@ -59,8 +57,7 @@ void MIDI_SendNoteOff(uint8_t note) {
     }}
 
 uint8_t MIDI_EnergyToVelocity(float32_t energy) {
-    const float32_t ENERGY_MIN = 50.0f;
-    const float32_t ENERGY_MAX = 4000.0f;
+    const float32_t ENERGY_MIN = ENERGY_THRESHOLD;
 
     if (energy < ENERGY_MIN) return 1;
     if (energy > ENERGY_MAX) energy = ENERGY_MAX;

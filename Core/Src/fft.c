@@ -79,7 +79,7 @@ float32_t FFT_FindFundamentalFrequency(const float32_t *fftMagnitudes) {
 	}
 
 	// Si hay suficiente energía en el subarmónico, usar ese como fundamental
-	if (subharmonicVal > 0.2f * maxVal) {
+	if (subharmonicVal > 0.4f * maxVal) {
 		fc = subharmonicBin * deltaF;
 	}
 
